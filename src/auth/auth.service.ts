@@ -1,21 +1,104 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import {Model} from 'mongoose';
 import {InjectModel} from "@nestjs/mongoose";
 import {AuthSchema, Auth}  from  '../schemas/auth.schema';
-import {CreateUserDto} from '../dto/createAuthDto'
+import {CreateUserDto, LoginDto} from '../dto/createAuthDto'
+import {Response} from 'express'
+import * as bcrypt from 'bcryptjs';
+import {JwtService} from '@nestjs/jwt'
 
 @Injectable()
 export class AuthService {
 
-    constructor(@InjectModel(Auth.name) private authModel: Model<Auth>) {}
+    constructor(@InjectModel(Auth.name) 
+    private authModel: Model<Auth>,
+    private jwtService:JwtService
+) {}
 
-    getYeah(): string{
-        return 'Yeah'
-    }
+    async createUser(createUserDto: CreateUserDto, res: Response){
+        try{
+            const password = await bcrypt.hash(createUserDto.password, 10)
+            createUserDto.password = password
+            const createdUser =  new this.authModel(createUserDto);
+            await createdUser.save().then(()=>{
+                return res.send({
+                    message: 'Account created', 
+                })
 
-    async createUser(createUserDto: CreateUserDto): Promise<Auth> {
-        const createdUser = new this.authModel(createUserDto);
-        return await createdUser.save();
+            });
+           
+        }catch(error){
+           
+            throw new Error('an error occured')
+
+        }
+        
+      }
+
+      async signIn(loginDto: LoginDto) {
+        const existingUser = await this.checkIfUserAlreadyExists(loginDto);
+    
+        if (existingUser) {
+          const passwordChecker = await this.checkIfPasswordsAreTheSame(
+            loginDto.password,
+            existingUser,
+          );
+          if (passwordChecker === false) {
+            throw new HttpException(
+              {
+                status: HttpStatus.NOT_FOUND,
+                error: 'Invalid password',
+              },
+              HttpStatus.NOT_FOUND,
+            );
+          } else {
+            const payload = {
+              sub: existingUser?.id,
+              email: existingUser?.email,
+            };
+            return this.jwtService.signAsync(payload);
+          }
+        } else {
+          throw new HttpException(
+            {
+              status: HttpStatus.NOT_FOUND,
+              error: 'User not found',
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+      }
+
+      private async checkIfUserAlreadyExists(loginDto: LoginDto) {
+        try {
+          const user = await this.authModel.findOne({
+            email: loginDto.email,
+          });
+          return user;
+        } catch (err) {
+          return err;
+        }
       }
     
+      private async checkIfPasswordsAreTheSame(password: string, user: any) {
+        try {
+          const passwordsAretheSame: boolean = await bcrypt.compare(
+            password,
+            user?.password,
+          );
+    
+          if (passwordsAretheSame === false) {
+            return false;
+          } else {
+            return true;
+          }
+        } catch (err) {
+          return err;
+        }
+      }
+    
+
+
+
+
 }
