@@ -6,7 +6,7 @@ import {MongooseModule} from '@nestjs/mongoose';
 
 
 @Module({
-  imports: [AuthModule, MongooseModule.forRoot('mongodb+srv://myNetflix:aQn0uylEtLjFk9uR@cluster0.9czs9zw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')],
+  imports: [AuthModule, MongooseModule.forRoot(process.env.MongoDbUrl)],
   controllers: [AppController],
   providers: [AppService],
 })
