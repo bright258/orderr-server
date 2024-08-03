@@ -29,13 +29,13 @@ export class AuthService {
            
         }catch(error){
            
-            throw new Error('an error occured')
+            throw new Error('an error occured' + error)
 
         }
         
       }
 
-      async signIn(loginDto: LoginDto) {
+      async signIn(loginDto: LoginDto): Promise<{access_token : string}> {
         const existingUser = await this.checkIfUserAlreadyExists(loginDto);
     
         if (existingUser) {
@@ -56,7 +56,7 @@ export class AuthService {
               sub: existingUser?.id,
               email: existingUser?.email,
             };
-            return this.jwtService.signAsync(payload);
+           return {access_token: await this.jwtService.signAsync(payload)};
           }
         } else {
           throw new HttpException(
