@@ -5,6 +5,7 @@ export type AuthDocument = HydratedDocument<Auth>
 
 @Schema()
 export class Auth{
+   
     @Prop()
     fullName: string;
 

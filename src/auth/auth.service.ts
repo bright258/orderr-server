@@ -96,6 +96,10 @@ export class AuthService {
           return err;
         }
       }
+      
+      async findOne(id: string): Promise<Auth> {
+        return await this.authModel.findById(id ).exec()
+      }
     
 
 

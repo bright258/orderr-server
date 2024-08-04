@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, HttpException, HttpStatus, Param } from '@nestjs/common';
 import  {AuthService} from "./auth.service"
 import { CreateUserDto, LoginDto } from 'src/dto/createAuthDto';
 import { Auth } from 'src/schemas/auth.schema';
@@ -31,4 +31,13 @@ export class AuthController {
         );
         }
     }
+
+
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        
+        
+        return await this.authService.findOne(id)
+    }
+
 }
