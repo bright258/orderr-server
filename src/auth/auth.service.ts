@@ -17,15 +17,24 @@ export class AuthService {
 
     async createUser(createUserDto: CreateUserDto, res: Response){
         try{
+           const user = await this.checkIfUserAlreadyExists(createUserDto)
+            if (user){
+              return res.send({
+                message: ' User with this email already exists', 
+            })
+
+          }else{
             const password = await bcrypt.hash(createUserDto.password, 10)
             createUserDto.password = password
+            
             const createdUser =  new this.authModel(createUserDto);
             await createdUser.save().then(()=>{
                 return res.send({
                     message: 'Account created', 
                 })
-
-            });
+  
+            });}
+          
            
         }catch(error){
            
