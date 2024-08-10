@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Post, Res, HttpException, HttpStatus, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, HttpException, HttpStatus, Param, Catch } from '@nestjs/common';
 import  {AuthService} from "./auth.service"
 import { CreateUserDto, LoginDto } from 'src/dto/createAuthDto';
 import { Auth } from 'src/schemas/auth.schema';
 
 
 @Controller('auth')
+@Catch()
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
